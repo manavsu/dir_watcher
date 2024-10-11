@@ -19,7 +19,6 @@ def traverse_and_hash(directory):
             file_hash = compute_sha256(file_path)
             d = {file_path: file_hash}
     
-
 def scan(directory):
     """Scan the directory for changes."""
     return traverse_and_hash(directory)
