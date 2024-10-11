@@ -1,2 +1,8 @@
 /.mypy_cache
-/.vscode
+/.vscode\
+tmp
+.vcs
+.venv
+.vscode
+/__pycache__
+client/__pycache__/

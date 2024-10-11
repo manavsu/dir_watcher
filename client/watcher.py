@@ -1,44 +1,67 @@
-import os
-from time import sleep
+import time
+import argparse
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 import hashlib
+import logging
+from repo import Repo
+import signal
+import threading
 
-def compute_sha256(file_path):
-    """Compute the SHA-256 hash of a file."""
-    sha256_hash = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
-    return sha256_hash.hexdigest()
+log = logging.getLogger(__name__)
 
-def traverse_and_hash(directory):
-    """Recursively traverse the directory and compute SHA-256 hash for each file."""
-    d = {}
-    for root, _, files in os.walk(directory):
-        for file in files:
-            file_path = os.path.join(root, file)
-            file_hash = compute_sha256(file_path)
-            d = {file_path: file_hash}
+cancel_event = threading.Event()
+
+class ChangeHandler(FileSystemEventHandler):
+    def __init__(self, path):
+        super().__init__()
+        self.repo = Repo(path)
+
+    def on_modified(self, event):
+        if event.is_directory:
+            return
+        if event.src_path == self.repo.index_file or event.src_path == self.repo.uuid_file:
+            return
+        self.repo.update_file_state(event.src_path)
+        log.debug(f"File modified: {event.src_path}")
     
-def scan(directory):
-    """Scan the directory for changes."""
-    return traverse_and_hash(directory)
+    def on_created(self, event):
+        if event.is_directory:
+            return
+        if event.src_path == self.repo.index_file or event.src_path == self.repo.uuid_file:
+            return
+        self.repo.update_file_state(event.src_path)
+        log.debug(f"File created: {event.src_path}")
+    
+    def on_deleted(self, event):
+        if event.is_directory:
+            return
+        if event.src_path == self.repo.index_file or event.src_path == self.repo.uuid_file:
+            return
+        self.repo.delete_file_state(event.src_path)
+        log.debug(f"File deleted: {event.src_path}")
 
-def submit_scan_results(scan_results, url):
-    """Submit the scan results to the specified URL."""
-    headers = {'Content-Type': 'application/json'}
-    response = requests.post(url, data=json.dumps(scan_results), headers=headers)
-    return response.status_code, response.text
+def signal_handler(signal, frame):
+    print(f"Signal {signal} received, stopping observer...")
+    cancel_event.set()
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) != 3:
-        print("Usage: python watcher.py <directory> <url>")
-        sys.exit(1)
-    directory = sys.argv[1]
-    url = sys.argv[2]
-    while True:
-        scan_results = scan(directory)
-        status_code, response_text = submit_scan_results(scan_results, url)
-        print(f"Submitted scan results: {status_code} - {response_text}")
-        sleep(0.25)
+    parser = argparse.ArgumentParser(description="Watch a directory for changes.")
+    parser.add_argument("path", nargs="?", default=".", help="The path to watch. Defaults to the current directory.")
+    args = parser.parse_args()
 
+    path_to_watch = args.path
+    log.info(f"Watching {path_to_watch} for changes.")
+    event_handler = ChangeHandler(path_to_watch)
+    observer = Observer()
+    observer.schedule(event_handler, path=path_to_watch, recursive=True)
+    
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    observer.start()
+
+    while not cancel_event.wait(1):
+        pass
+    observer.stop()
+    observer.join()
