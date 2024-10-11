@@ -22,7 +22,6 @@ class TestRepo(unittest.TestCase):
         return super().tearDown()
     
     def test_should_init_correctly(self):
-        print(self.test_dir)
         repo = Repo(self.test_dir)
         self.assertEqual(repo.path, self.test_dir)
         self.assertEqual(repo.dir_state, {})
@@ -73,6 +72,20 @@ class TestRepo(unittest.TestCase):
         repo.update_file_state(test_file)
         repo.delete_file_state(test_file)
         self.assertNotIn(test_file, repo.dir_state)
+    
+    def should_reinitialize_correctly(self):
+        repo = Repo(self.test_dir)
+        test_file = os.path.join(self.test_dir, 'test.txt')
+        uuid = repo.UUID
+        with open(test_file, 'w') as f:
+            f.write('test content')
+        
+        repo.update_file_state(test_file)
+        repo.commit()
+        repo = Repo(self.test_dir)
+        self.assertEqual(repo.UUID, uuid)
+        self.assertIn(test_file, repo.dir_state)
+        self.assertEqual(repo.dir_state[test_file], hashlib.sha1(b'test content').hexdigest())
 
 if __name__ == '__main__':
     unittest.main()
