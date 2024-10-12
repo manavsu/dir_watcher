@@ -19,9 +19,9 @@ class Repo:
         self.repo_dir = os.path.join(path, config.REPO_DIR)
         self.index_file = os.path.join(self.repo_dir, config.INDEX_FILE)
         self.uuid_file = os.path.join(self.repo_dir, config.UUID_FILE)
+        self.upstream_stub = FileWatcherStub() 
         self.load_state()
         self.scan_dir()
-        self.upstream_stub = FileWatcherStub() 
 
     def load_state(self):
         if not os.path.exists(self.repo_dir):

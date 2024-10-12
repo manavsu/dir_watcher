@@ -1,5 +1,5 @@
 import grpc
-from file_watcher_service_pb2 import FileUpdate, File
+from file_watcher_service_pb2 import FileUpdate, File, SearchRequest
 from file_watcher_service_pb2_grpc import FileWatcherServiceStub
 import config
 
@@ -15,3 +15,8 @@ class FileWatcherStub:
             update_type=update_type
         )
         self.stub.UpdateFile(request)
+
+    def search(self, directory_uuid, search_term):
+        request = SearchRequest(uuid=directory_uuid, search_term=search_term)
+        response = self.stub.Search(request)
+        return response

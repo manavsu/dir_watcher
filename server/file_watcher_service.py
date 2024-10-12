@@ -1,4 +1,4 @@
-from file_watcher_service_pb2 import FileUpdate
+from file_watcher_service_pb2 import FileUpdate, SearchMatchesResponse
 from file_watcher_service_pb2_grpc import FileWatcherServiceServicer
 from db_config import SessionLocal
 from db_models import Directory, File
@@ -16,7 +16,7 @@ class FileWatcherService(FileWatcherServiceServicer):
             try:
                 directory = session.query(Directory).filter_by(id=request.uuid).one()
             except NoResultFound:
-                print(f"Creating new directory with id {request.uuid}, {type(request.uuid)}")
+                log.info(f"Creating new directory with id {request.uuid}, {type(request.uuid)}")
                 directory = Directory(id=request.uuid)
                 session.add(directory)
                 session.commit()
@@ -26,7 +26,9 @@ class FileWatcherService(FileWatcherServiceServicer):
                 existing_file.file_path = request.file.file_path
                 existing_file.hash = request.file.hash
                 existing_file.update_time = request.file.update_time.ToDatetime()
+                log.debug(f"Updating file {existing_file}")
             except NoResultFound:
+                log.debug(f"Creating new file {request.file.file_path} in directory {directory.id}")
                 new_file = File(
                     file_path=request.file.file_path,
                     hash=request.file.hash,
@@ -42,3 +44,28 @@ class FileWatcherService(FileWatcherServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             log.error(f"Error processing update file {request} {e}", exc_info=True)
         return Empty()
+    
+    def Search(self, request, context):
+        try:
+            session = SessionLocal()
+            query = session.query(File).filter_by(directory_id=request.uuid)
+            if request.search_term:
+                query = query.filter(File.file_path.contains(request.search_term))
+            files = query.all()
+            
+            response = SearchMatchesResponse()
+            response.search_term = request.search_term
+            response.uuid = request.uuid
+            for file in files:
+                file_info = response.files.add()
+                file_info.file_path = file.file_path
+                file_info.hash = file.hash
+                file_info.update_time.FromDatetime(file.update_time)
+            
+            session.close()
+            return response
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            log.error(f"Error processing search request {request} {e}", exc_info=True)
+        return SearchMatchesResponse(search_term=request.search_term, uuid=request.uuid)

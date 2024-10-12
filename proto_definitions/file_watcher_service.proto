@@ -7,6 +7,7 @@ import "google/protobuf/empty.proto";
 
 service FileWatcherService {
     rpc UpdateFile (FileUpdate) returns (google.protobuf.Empty);
+    rpc Search (SearchRequest) returns (SearchMatchesResponse);
 }
 
 enum FileUpdateType {
@@ -19,6 +20,17 @@ message FileUpdate {
     File file = 1;
     string uuid = 2;
     FileUpdateType update_type = 3;
+}
+
+message SearchRequest {
+    string uuid = 1;
+    string search_term = 2;
+}
+
+message SearchMatchesResponse {
+    string uuid = 1;
+    string search_term = 2;
+    repeated File files = 3;
 }
 
 message File {

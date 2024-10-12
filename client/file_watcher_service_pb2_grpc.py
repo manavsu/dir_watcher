@@ -40,12 +40,23 @@ class FileWatcherServiceStub(object):
                 request_serializer=file__watcher__service__pb2.FileUpdate.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
+        self.Search = channel.unary_unary(
+                '/dir_watcher.FileWatcherService/Search',
+                request_serializer=file__watcher__service__pb2.SearchRequest.SerializeToString,
+                response_deserializer=file__watcher__service__pb2.SearchMatchesResponse.FromString,
+                _registered_method=True)
 
 
 class FileWatcherServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def UpdateFile(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Search(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -58,6 +69,11 @@ def add_FileWatcherServiceServicer_to_server(servicer, server):
                     servicer.UpdateFile,
                     request_deserializer=file__watcher__service__pb2.FileUpdate.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'Search': grpc.unary_unary_rpc_method_handler(
+                    servicer.Search,
+                    request_deserializer=file__watcher__service__pb2.SearchRequest.FromString,
+                    response_serializer=file__watcher__service__pb2.SearchMatchesResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -87,6 +103,33 @@ class FileWatcherService(object):
             '/dir_watcher.FileWatcherService/UpdateFile',
             file__watcher__service__pb2.FileUpdate.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Search(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/dir_watcher.FileWatcherService/Search',
+            file__watcher__service__pb2.SearchRequest.SerializeToString,
+            file__watcher__service__pb2.SearchMatchesResponse.FromString,
             options,
             channel_credentials,
             insecure,
