@@ -11,10 +11,11 @@ from datetime import datetime
 log = logging.getLogger(__name__)
 
 class Repo:
-    def __init__(self, path):
+    def __init__(self, path, push=True):
         self.dir_state = {}
         self.UUID = None
         self.path = path
+        self.push = push
         self.repo_dir = os.path.join(path, config.REPO_DIR)
         self.index_file = os.path.join(self.repo_dir, config.INDEX_FILE)
         self.uuid_file = os.path.join(self.repo_dir, config.UUID_FILE)
@@ -49,6 +50,15 @@ class Repo:
                 if filepath not in self.dir_state:
                     self.dir_state[filepath] = self.hash_file(filepath)
                     log.info(f"Added {filepath} to state.")
+                    if self.push:
+                        self.upstream_stub.update_file(self.UUID, filepath, self.dir_state[filepath], datetime.now(), FileUpdateType.CREATED)
+                else:
+                    hash = self.hash_file(filepath)
+                    if hash != self.dir_state[filepath]:
+                        self.dir_state[filepath] = hash
+                        if self.push:
+                            self.upstream_stub.update_file(self.UUID, filepath, self.dir_state[filepath], datetime.now(), FileUpdateType.UPDATED)
+                        log.info(f"Updated {filepath} in state.")
         self.commit()
 
     def hash_file(self, filepath):
@@ -62,19 +72,19 @@ class Repo:
             log.error(f"File not found: {filepath}", extra={'filepath': filepath, 'func': 'hash_file'})
             return None
 
-    def update_file_state(self, filepath, created=False, push=True):
+    def update_file_state(self, filepath, created=False):
         self.dir_state[filepath] = self.hash_file(filepath)
         log.info(f"Updated state for {filepath}")
         self.commit()
-        if push:
+        if self.push:
             self.upstream_stub.update_file(self.UUID, filepath, self.dir_state[filepath], datetime.now(), FileUpdateType.CREATED if created else FileUpdateType.UPDATED)
 
-    def delete_file_state(self, filepath, push=True):
+    def delete_file_state(self, filepath):
         if filepath in self.dir_state:
             del self.dir_state[filepath]
             log.info(f"Deleted state for {filepath}")
             self.commit()
-            if push:
+            if self.push:
                 self.upstream_stub.update_file(self.UUID, filepath, self.dir_state[filepath], datetime.now(), FileUpdateType.DELETED)
 
         else:

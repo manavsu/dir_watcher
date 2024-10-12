@@ -7,7 +7,6 @@ import "google/protobuf/empty.proto";
 
 service FileWatcherService {
     rpc UpdateFile (FileUpdate) returns (google.protobuf.Empty);
-    rpc UpdateFiles (stream FileUpdate) returns (google.protobuf.Empty);
 }
 
 enum FileUpdateType {

@@ -22,7 +22,7 @@ class TestRepo(unittest.TestCase):
         return super().tearDown()
     
     def test_should_init_correctly(self):
-        repo = Repo(self.test_dir)
+        repo = Repo(self.test_dir, push=False)
         self.assertEqual(repo.path, self.test_dir)
         self.assertEqual(repo.dir_state, {})
         self.assertIsNotNone(repo.UUID)
@@ -32,7 +32,7 @@ class TestRepo(unittest.TestCase):
         self.assertTrue(os.path.exists(repo.uuid_file))
 
     def test_hash_file(self):
-        repo = Repo(self.test_dir)
+        repo = Repo(self.test_dir, push=False)
         test_file = os.path.join(self.test_dir, 'test.txt')
         with open(test_file, 'w') as f:
             f.write('test content')
@@ -42,47 +42,47 @@ class TestRepo(unittest.TestCase):
         self.assertEqual(file_hash, hashlib.sha1(b'test content').hexdigest())
 
     def test_update_file_state(self):
-        repo = Repo(self.test_dir)
+        repo = Repo(self.test_dir, push=False)
         test_file = os.path.join(self.test_dir, 'test.txt')
         with open(test_file, 'w') as f:
             f.write('test content')
         
-        repo.update_file_state(test_file, created=True, push=False)
+        repo.update_file_state(test_file, created=True)
         self.assertIn(test_file, repo.dir_state)
         self.assertEqual(repo.dir_state[test_file], hashlib.sha1(b'test content').hexdigest())
     
     def test_update_index_file_state(self):
-        repo = Repo(self.test_dir)
+        repo = Repo(self.test_dir, push=False)
         test_file = os.path.join(self.test_dir, 'test.txt')
         with open(test_file, 'w') as f:
             f.write('test content')
         
-        repo.update_file_state(test_file, created=True, push=False)
+        repo.update_file_state(test_file, created=True)
         with open(repo.index_file, 'r') as f:
             index = json.load(f)
             self.assertIn(test_file, index)
             self.assertEqual(index[test_file], hashlib.sha1(b'test content').hexdigest())
 
     def test_delete_file_state(self):
-        repo = Repo(self.test_dir)
+        repo = Repo(self.test_dir, push=False)
         test_file = os.path.join(self.test_dir, 'test.txt')
         with open(test_file, 'w') as f:
             f.write('test content')
         
-        repo.update_file_state(test_file, created=True, push=False)
-        repo.delete_file_state(test_file, push=False)
+        repo.update_file_state(test_file, created=True)
+        repo.delete_file_state(test_file)
         self.assertNotIn(test_file, repo.dir_state)
     
     def should_reinitialize_correctly(self):
-        repo = Repo(self.test_dir)
+        repo = Repo(self.test_dir, push=False)
         test_file = os.path.join(self.test_dir, 'test.txt')
         uuid = repo.UUID
         with open(test_file, 'w') as f:
             f.write('test content')
         
-        repo.update_file_state(test_file, created=True, push=False)
+        repo.update_file_state(test_file, created=True)
         repo.commit()
-        repo = Repo(self.test_dir)
+        repo = Repo(self.test_dir, push=False)
         self.assertEqual(repo.UUID, uuid)
         self.assertIn(test_file, repo.dir_state)
         self.assertEqual(repo.dir_state[test_file], hashlib.sha1(b'test content').hexdigest())
