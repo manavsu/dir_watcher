@@ -40,6 +40,11 @@ class FileWatcherServiceStub(object):
                 request_serializer=file__watcher__service__pb2.FileUpdate.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
+        self.UpdateFiles = channel.stream_unary(
+                '/dir_watcher.FileWatcherService/UpdateFiles',
+                request_serializer=file__watcher__service__pb2.FileUpdate.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
 
 
 class FileWatcherServiceServicer(object):
@@ -51,11 +56,22 @@ class FileWatcherServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdateFiles(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_FileWatcherServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'UpdateFile': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateFile,
+                    request_deserializer=file__watcher__service__pb2.FileUpdate.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'UpdateFiles': grpc.stream_unary_rpc_method_handler(
+                    servicer.UpdateFiles,
                     request_deserializer=file__watcher__service__pb2.FileUpdate.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
@@ -85,6 +101,33 @@ class FileWatcherService(object):
             request,
             target,
             '/dir_watcher.FileWatcherService/UpdateFile',
+            file__watcher__service__pb2.FileUpdate.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateFiles(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(
+            request_iterator,
+            target,
+            '/dir_watcher.FileWatcherService/UpdateFiles',
             file__watcher__service__pb2.FileUpdate.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,

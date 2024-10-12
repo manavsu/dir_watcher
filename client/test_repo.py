@@ -87,13 +87,5 @@ class TestRepo(unittest.TestCase):
         self.assertIn(test_file, repo.dir_state)
         self.assertEqual(repo.dir_state[test_file], hashlib.sha1(b'test content').hexdigest())
 
-    def test_scan_dir(self):
-        repo = Repo(self.test_dir)
-        test_file = os.path.join(self.test_dir, 'test.txt')
-        with open(test_file, 'w') as f:
-            f.write('test content')
-        
-        repo.update_file_state(test_file, created=True)
-
 if __name__ == '__main__':
     unittest.main()
