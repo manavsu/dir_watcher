@@ -1,0 +1,12 @@
+altgraph==0.17.4
+greenlet==3.1.1
+grpcio==1.66.2
+grpcio-tools==1.66.2
+packaging==24.1
+protobuf==5.28.2
+pyinstaller==6.10.0
+pyinstaller-hooks-contrib==2024.8
+setuptools==75.1.0
+SQLAlchemy==2.0.35
+typing_extensions==4.12.2
+watchdog==5.0.3
