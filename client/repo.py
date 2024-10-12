@@ -4,6 +4,9 @@ import json
 import config
 import logging
 import uuid
+from file_watcher_stub import FileWatcherStub
+from file_watcher_service_pb2 import FileUpdateType
+from datetime import datetime
 
 log = logging.getLogger(__name__)
 
@@ -17,6 +20,7 @@ class Repo:
         self.uuid_file = os.path.join(self.repo_dir, config.UUID_FILE)
         self.load_state()
         self.scan_dir()
+        self.upstream_stub = FileWatcherStub() 
 
     def load_state(self):
         if not os.path.exists(self.repo_dir):
@@ -58,18 +62,24 @@ class Repo:
             log.error(f"File not found: {filepath}", extra={'filepath': filepath, 'func': 'hash_file'})
             return None
 
-    def update_file_state(self, filepath):
+    def update_file_state(self, filepath, created=False, push=True):
         self.dir_state[filepath] = self.hash_file(filepath)
         log.info(f"Updated state for {filepath}")
         self.commit()
+        if push: 
+            self.upstream_stub.update_file(self.UUID, filepath, self.dir_state[filepath], os.path.getmtime(filepath), FileUpdateType.CREATED if created else FileUpdateType.UPDATED)
 
-    def delete_file_state(self, filepath):
+    def delete_file_state(self, filepath, push=True):
         if filepath in self.dir_state:
             del self.dir_state[filepath]
             log.info(f"Deleted state for {filepath}")
             self.commit()
+            if push:
+                self.upstream_stub.update_file(self.UUID, filepath, self.dir_state[filepath], datetime.now(), FileUpdateType.DELETED)
+
         else:
             log.error(f"File not found: {filepath}", extra={'filepath': filepath, 'func': 'delete_file_state'})
+        
 
     def commit(self):
         with open(self.index_file, 'w') as f:

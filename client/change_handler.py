@@ -14,7 +14,7 @@ class ChangeHandler(FileSystemEventHandler):
             return
         if event.src_path == self.repo.index_file or event.src_path == self.repo.uuid_file:
             return
-        self.repo.update_file_state(event.src_path)
+        self.repo.update_file_state(event.src_path, created=False)
         log.debug(f"File modified: {event.src_path}")
     
     def on_created(self, event):
@@ -22,7 +22,7 @@ class ChangeHandler(FileSystemEventHandler):
             return
         if event.src_path == self.repo.index_file or event.src_path == self.repo.uuid_file:
             return
-        self.repo.update_file_state(event.src_path)
+        self.repo.update_file_state(event.src_path, created=True)
         log.debug(f"File created: {event.src_path}")
     
     def on_deleted(self, event):

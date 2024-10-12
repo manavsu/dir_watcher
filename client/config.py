@@ -6,4 +6,4 @@ UUID_FILE = 'uuid.txt'
 
 TEST_DIR = 'tmp/test'
 
-URL = 'localhost'
+URL = 'localhost:50051'
