@@ -1,5 +1,5 @@
-from proto.file_watcher_service_pb2 import File, FileUpdate
-from proto.file_watcher_service_pb2_grpc import FileWatcherServiceServicer
+from file_watcher_service_pb2 import File, FileUpdate
+from file_watcher_service_pb2_grpc import FileWatcherServiceServicer
 from db_config import SessionLocal
 from db_models import Directory, File
 from sqlalchemy.orm.exc import NoResultFound

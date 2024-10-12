@@ -2,7 +2,8 @@ import grpc
 import logging
 import threading
 from file_watcher_service import FileWatcherService
-from proto import file_watcher_service_pb2_grpc
+import file_watcher_service_pb2_grpc
+
 
 log = logging.getLogger(__name__)
 

@@ -1,27 +1,20 @@
 import grpc
-from proto.file_watcher_service_pb2 import FileUpdateRequest
-from proto.file_watcher_service_pb2_grpc import FileWatcherServiceStub
+from file_watcher_service_pb2 import FileUpdate, File
+from file_watcher_service_pb2_grpc import FileWatcherServiceStub
+import config
 
-def run():
-    # Create a channel to connect to the gRPC server
-    with grpc.insecure_channel('localhost:50051') as channel:
-        # Create a stub for the FileWatcherService
-        stub = FileWatcherServiceStub(channel)
-        
-        # Create a request object
-        request = FileUpdateRequest(
-            directory_uuid='your-directory-uuid',
-            file_uuid='your-file-uuid',
-            file_path='/path/to/your/file',
-            file_hash='your-file-hash',
-            update_time='2023-10-01T12:00:00Z'
+class FileWatcherClient:
+    def __init__(self):
+        self.channel = grpc.insecure_channel(config.URL':50051')
+        self.stub = FileWatcherServiceStub(self.channel)
+    
+    def update_file(self, directory_uuid, file_uuid, file_path, file_hash, update_time):
+        request = FileUpdate(
+            directory_uuid=directory_uuid,
+            file_uuid=file_uuid,
+            file_path=file_path,
+            file_hash=file_hash,
+            update_time=update_time
         )
-        
-        # Call the UpdateFile method
-        response = stub.UpdateFile(request)
-        
-        # Print the response
-        print("File update status:", response.status)
-
-if __name__ == '__main__':
-    run()
+        response = self.stub.UpdateFile(request)
+        return response.status
