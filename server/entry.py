@@ -3,7 +3,7 @@ import logging
 import threading
 from file_watcher_service import FileWatcherService
 import file_watcher_service_pb2_grpc
-
+from concurrent.futures import ThreadPoolExecutor
 
 log = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ def signal_handler(signal, frame):
     cancel_event.set()
 
 def serve():
-    server = grpc.server(thread_pool=10)
+    server = grpc.server(thread_pool=ThreadPoolExecutor(max_workers=10))
     file_watcher_service_pb2_grpc.add_FileWatcherServiceServicer_to_server(FileWatcherService(), server)
     server.add_insecure_port('[::]:50051')
     server.start()

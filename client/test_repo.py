@@ -47,7 +47,7 @@ class TestRepo(unittest.TestCase):
         with open(test_file, 'w') as f:
             f.write('test content')
         
-        repo.update_file_state(test_file)
+        repo.update_file_state(test_file, created=True, push=False)
         self.assertIn(test_file, repo.dir_state)
         self.assertEqual(repo.dir_state[test_file], hashlib.sha1(b'test content').hexdigest())
     
@@ -57,7 +57,7 @@ class TestRepo(unittest.TestCase):
         with open(test_file, 'w') as f:
             f.write('test content')
         
-        repo.update_file_state(test_file)
+        repo.update_file_state(test_file, created=True, push=False)
         with open(repo.index_file, 'r') as f:
             index = json.load(f)
             self.assertIn(test_file, index)
@@ -69,8 +69,8 @@ class TestRepo(unittest.TestCase):
         with open(test_file, 'w') as f:
             f.write('test content')
         
-        repo.update_file_state(test_file)
-        repo.delete_file_state(test_file)
+        repo.update_file_state(test_file, created=True, push=False)
+        repo.delete_file_state(test_file, push=False)
         self.assertNotIn(test_file, repo.dir_state)
     
     def should_reinitialize_correctly(self):
@@ -80,12 +80,20 @@ class TestRepo(unittest.TestCase):
         with open(test_file, 'w') as f:
             f.write('test content')
         
-        repo.update_file_state(test_file)
+        repo.update_file_state(test_file, created=True, push=False)
         repo.commit()
         repo = Repo(self.test_dir)
         self.assertEqual(repo.UUID, uuid)
         self.assertIn(test_file, repo.dir_state)
         self.assertEqual(repo.dir_state[test_file], hashlib.sha1(b'test content').hexdigest())
+
+    def test_scan_dir(self):
+        repo = Repo(self.test_dir)
+        test_file = os.path.join(self.test_dir, 'test.txt')
+        with open(test_file, 'w') as f:
+            f.write('test content')
+        
+        repo.update_file_state(test_file, created=True)
 
 if __name__ == '__main__':
     unittest.main()

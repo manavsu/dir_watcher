@@ -66,8 +66,8 @@ class Repo:
         self.dir_state[filepath] = self.hash_file(filepath)
         log.info(f"Updated state for {filepath}")
         self.commit()
-        if push: 
-            self.upstream_stub.update_file(self.UUID, filepath, self.dir_state[filepath], os.path.getmtime(filepath), FileUpdateType.CREATED if created else FileUpdateType.UPDATED)
+        if push:
+            self.upstream_stub.update_file(self.UUID, filepath, self.dir_state[filepath], datetime.now(), FileUpdateType.CREATED if created else FileUpdateType.UPDATED)
 
     def delete_file_state(self, filepath, push=True):
         if filepath in self.dir_state:

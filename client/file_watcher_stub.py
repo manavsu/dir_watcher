@@ -14,5 +14,4 @@ class FileWatcherStub:
             uuid=directory_uuid,
             update_type=update_type
         )
-        response = self.stub.UpdateFile(request)
-        return response.status
+        self.stub.UpdateFile(request)
