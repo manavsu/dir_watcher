@@ -7,3 +7,6 @@ tmp
 /__pycache__
 client/__pycache__/
 server/__pycache__/
+server/db_output.json
+server/file_store.db
+
