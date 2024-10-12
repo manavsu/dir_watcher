@@ -20,7 +20,12 @@ python -m grpc_tools.protoc -I. --python_out="$SERVER_PROTO_DIR" --grpc_python_o
 
 echo "Proto definitions compiled successfully."
 
+echo "Building executables..."
+
 pyinstaller dir_watcher_client.spec
 pyinstaller dir_watcher_server.spec
 pyinstaller db_dump.spec
 pyinstaller search_client.spec
+pyinstaller db_init.spec
+
+echo "Executables built successfully."
